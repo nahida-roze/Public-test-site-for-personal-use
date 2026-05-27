@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公网部署 Web 综合测试页面</title>
+    <style>
+        :root {
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+            --text: #1a1a2e;
+            --text-secondary: #555;
+            --border: #e0e0e0;
+            --primary: #4f6ef7;
+            --primary-hover: #3b54d4;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --info: #3b82f6;
+            --shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+            --radius: 12px;
+            --transition: 0.2s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 顶部状态栏 */
+        .status-bar {
+            position: sticky;
+            top: 12px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+            pointer-events: none;
+        }
+        .status-bar .badge {
+            pointer-events: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            background: var(--card-bg);
+            box-shadow: var(--shadow);
+            cursor: default;
+            transition: var(--transition);
+        }
+        .badge .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: pulse-dot 1.8s infinite;
+        }
+        .badge .dot.green {
+            background: var(--success);
+        }
+        .badge .dot.red {
+            background: var(--danger);
+        }
+        .badge .dot.yellow {
+            background: var(--warning);
+        }
+        @keyframes pulse-dot {
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 8px rgba(34, 197, 94, 0);
+            }
+        }
+
+        /* 布局 */
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 22px 24px;
+            border: 1px solid var(--border);
+            transition: var(--transition);
+        }
+        .card:hover {
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        }
+        .card.full-width {
+            grid-column: 1 / -1;
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            font-weight: 700;
+            font-size: 16px;
+            color: var(--text);
+        }
+        .card-header .icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            background: #eef2ff;
+            color: var(--primary);
+            flex-shrink: 0;
+        }
+
+        /* 按钮 */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 9px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            transition: var(--transition);
+            background: var(--primary);
+            color: #fff;
+            white-space: nowrap;
+        }
+        .btn:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(79, 110, 247, 0.35);
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn.outline {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+        }
+        .btn.outline:hover {
+            background: #eef2ff;
+        }
+        .btn.small {
+            padding: 5px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+        .btn.danger {
+            background: var(--danger);
+        }
+        .btn.danger:hover {
+            background: #dc2626;
+            box-shadow: 0 4px 14px rgba(239, 68, 68, 0.35);
+        }
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* 输入框 */
+        input[type="text"],
+        input[type="url"],
+        input[type="number"],
+        textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: var(--transition);
+            background: #fafbfc;
+            color: var(--text);
+        }
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(79, 110, 247, 0.08);
+            background: #fff;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 70px;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 12px;
+        }
+
+        /* 结果区域 */
+        .result-box {
+            background: #1e1e2e;
+            color: #cdd6f4;
+            border-radius: 8px;
+            padding: 14px 16px;
+            font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-all;
+            line-height: 1.5;
+            margin-top: 10px;
+            border: 1px solid #313244;
+        }
+        .result-box.success {
+            border-left: 4px solid var(--success);
+        }
+        .result-box.error {
+            border-left: 4px solid var(--danger);
+        }
+        .result-box.info {
+            border-left: 4px solid var(--info);
+        }
+        .key-value {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+            gap: 10px;
+        }
+        .key-value:last-child {
+            border-bottom: none;
+        }
+        .key-value .key {
+            color: var(--text-secondary);
+            font-weight: 500;
+            flex-shrink: 0;
+        }
+        .key-value .val {
+            text-align: right;
+            font-weight: 600;
+            word-break: break-all;
+        }
+        .tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .tag.ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .tag.fail {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .tag.warn {
+            background: #fffbeb;
+            color: #92400e;
+        }
+
+        /* 进度条 */
+        .progress-bar {
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            background: var(--primary);
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 999;
+            padding: 12px 20px;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 13px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.3s ease;
+            max-width: 380px;
+        }
+        @keyframes slideIn {
+            from {
+                transform: translateX(120%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        .toast.success {
+            background: #16a34a;
+        }
+        .toast.error {
+            background: #dc2626;
+        }
+        .toast.info {
+            background: #2563eb;
+        }
+
+        /* loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #fff;
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 700px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                grid-template-columns: 1fr;
+                gap: 14px;
+            }
+            .card {
+                padding: 16px 18px;
+            }
+            .status-bar {
+                flex-direction: column;
+                gap: 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 顶部状态栏 ========== -->
+    <div class="status-bar">
+        <span class="badge" id="badgePage" title="页面加载状态">
+            <span class="dot green"></span> 页面已加载
+        </span>
+        <span class="badge" id="badgeNet" title="公网连通性">
+            <span class="dot yellow"></span> 检测中...
+        </span>
+        <span class="badge" id="badgeHttps" title="HTTPS状态">
+            <span class="dot yellow"></span> 协议检测中...
+        </span>
+        <span class="badge" id="badgeTime" title="当前时间">
+            🕐 <span id="liveTime">--</span>
+        </span>
+    </div>
+
+    <!-- ========== 主容器 ========== -->
+    <div class="container">
+
+        <!-- 卡片1: 连通性测试 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🌐</span> 公网连通性测试
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">
+                测试到常用公网地址的 HTTP 请求连通性
+            </p>
+            <div class="btn-group">
+                <button class="btn small" onclick="testConnectivity('https://www.baidu.com', '百度')">🔗 百度</button>
+                <button class="btn small" onclick="testConnectivity('https://www.google.com', 'Google')">🔗 Google</button>
+                <button class="btn small" onclick="testConnectivity('https://api.github.com', 'GitHub API')">🔗 GitHub</button>
+                <button class="btn small outline" onclick="testConnectivity('https://httpbin.org/get', 'httpbin')">🧪 httpbin</button>
+            </div>
+            <div class="result-box info" id="resultConnectivity">点击上方按钮开始测试...</div>
+            <div class="progress-bar"><div class="progress-fill" id="progressConn"></div></div>
+        </div>
+
+        <!-- 卡片2: 自定义URL测试 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🔍</span> 自定义 URL 请求测试
+            </div>
+            <input type="url" id="customUrl" placeholder="输入完整URL，如 https://example.com/api" value="https://httpbin.org/ip">
+            <div class="btn-group" style="margin-top:10px;">
+                <button class="btn small" onclick="customGet()">GET 请求</button>
+                <button class="btn small outline" onclick="customPost()">POST 请求</button>
+                <button class="btn small danger" onclick="customTimeout()">超时模拟(5s)</button>
+            </div>
+            <div class="result-box" id="resultCustom" style="max-height:150px;">等待请求...</div>
+        </div>
+
+        <!-- 卡片3: 资源加载测试 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📦</span> 静态资源加载测试
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+                测试图片、字体等资源的加载能力
+            </p>
+            <div class="btn-group">
+                <button class="btn small" onclick="testImageLoad()">🖼️ 加载测试图片</button>
+                <button class="btn small outline" onclick="testFontLoad()">🔤 测试字体加载</button>
+            </div>
+            <div id="resourcePreview" style="margin-top:12px;min-height:40px;"></div>
+            <div class="result-box info" id="resultResource">点击按钮测试资源加载...</div>
+        </div>
+
+        <!-- 卡片4: WebSocket 测试 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🔌</span> WebSocket 测试
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+                测试 WebSocket 连接（使用公共 Echo 服务）
+            </p>
+            <div class="btn-group">
+                <button class="btn small" id="btnWsConnect" onclick="wsConnect()">🔗 连接</button>
+                <button class="btn small outline" id="btnWsSend" onclick="wsSend()" disabled>📤 发送消息</button>
+                <button class="btn small danger" id="btnWsClose" onclick="wsClose()" disabled>❌ 断开</button>
+            </div>
+            <div class="result-box" id="resultWebSocket" style="max-height:130px;">未连接</div>
+        </div>
+
+        <!-- 卡片5: 浏览器信息 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">🖥️</span> 浏览器 & 系统信息
+            </div>
+            <div id="browserInfo">
+                <div class="key-value"><span class="key">User Agent</span><span class="val" id="ua" style="font-size:11px;">--</span></div>
+                <div class="key-value"><span class="key">平台</span><span class="val" id="platform">--</span></div>
+                <div class="key-value"><span class="key">语言</span><span class="val" id="lang">--</span></div>
+                <div class="key-value"><span class="key">屏幕分辨率</span><span class="val" id="screenRes">--</span></div>
+                <div class="key-value"><span class="key">视口大小</span><span class="val" id="viewport">--</span></div>
+                <div class="key-value"><span class="key">Cookie 启用</span><span class="val" id="cookieEnabled">--</span></div>
+                <div class="key-value"><span class="key">在线状态</span><span class="val" id="onlineStatus">--</span></div>
+                <div class="key-value"><span class="key">Do Not Track</span><span class="val" id="dnt">--</span></div>
+            </div>
+        </div>
+
+        <!-- 卡片6: 本地存储测试 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">💾</span> 本地存储测试
+            </div>
+            <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">
+                测试 localStorage / sessionStorage 是否可用
+            </p>
+            <input type="text" id="storageKey" placeholder="键名" value="test_key" style="margin-bottom:6px;">
+            <input type="text" id="storageValue" placeholder="值" value="Hello World! 你好世界！">
+            <div class="btn-group" style="margin-top:8px;">
+                <button class="btn small" onclick="storageSet('local')">💾 localStorage 写入</button>
+                <button class="btn small" onclick="storageGet('local')">📖 localStorage 读取</button>
+                <button class="btn small outline" onclick="storageSet('session')">📝 sessionStorage 写入</button>
+                <button class="btn small outline" onclick="storageGet('session')">📖 sessionStorage 读取</button>
+                <button class="btn small danger" onclick="storageClear()">🗑️ 清除全部</button>
+            </div>
+            <div class="result-box info" id="resultStorage">等待操作...</div>
+        </div>
+
+        <!-- 卡片7: 表单功能测试 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">📋</span> 表单功能测试
+            </div>
+            <form id="testForm" onsubmit="handleFormSubmit(event)" style="display:flex;flex-direction:column;gap:10px;">
+                <input type="text" name="username" placeholder="用户名" required>
+                <input type="text" name="email" placeholder="邮箱" >
+                <textarea name="message" placeholder="留言内容..."></textarea>
+                <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                    <input type="checkbox" id="agree" required style="width:auto;">
+                    <label for="agree" style="font-size:13px;">我同意测试条款</label>
+                </div>
+                <button type="submit" class="btn">✅ 提交表单</button>
+                <button type="reset" class="btn outline">🔄 重置</button>
+            </form>
+            <div class="result-box info" id="resultForm" style="max-height:100px;">表单数据将在此显示...</div>
+        </div>
+
+        <!-- 卡片8: 性能指标 -->
+        <div class="card">
+            <div class="card-header">
+                <span class="icon">⚡</span> 页面性能指标
+            </div>
+            <div id="perfInfo">
+                <div class="key-value"><span class="key">DNS 查询</span><span class="val" id="perfDns">--</span></div>
+                <div class="key-value"><span class="key">TCP 连接</span><span class="val" id="perfTcp">--</span></div>
+                <div class="key-value"><span class="key">首字节时间 (TTFB)</span><span class="val" id="perfTtfb">--</span></div>
+                <div class="key-value"><span class="key">DOM 解析完成</span><span class="val" id="perfDom">--</span></div>
+                <div class="key-value"><span class="key">页面完全加载</span><span class="val" id="perfLoad">--</span></div>
+                <div class="key-value"><span class="key">当前内存(估算)</span><span class="val" id="perfMem">--</span></div>
+            </div>
+            <button class="btn small" style="margin-top:10px;" onclick="refreshPerf()">🔄 刷新指标</button>
+        </div>
+
+    </div>
+
+    <!-- Toast 容器 -->
+    <div id="toastContainer"></div>
+
+    <script>
+        // ==================== 初始化 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            updateBrowserInfo();
+            updateBadges();
+            refreshPerf();
+            startClock();
+            // 页面加载后自动做一次连通性检测
+            setTimeout(() => testConnectivity('https://www.baidu.com', '百度'), 500);
+            // 监听在线状态变化
+            window.addEventListener('online', updateBadges);
+            window.addEventListener('offline', updateBadges);
+            window.addEventListener('resize', updateBrowserInfo);
+        });
+
+        // ==================== Toast 通知 ====================
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = msg;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2800);
+        }
+
+        // ==================== 时钟 ====================
+        function startClock() {
+            const el = document.getElementById('liveTime');
+            const update = () => {
+                el.textContent = new Date().toLocaleString('zh-CN', { hour12: false });
+            };
+            update();
+            setInterval(update, 1000);
+        }
+
+        // ==================== 状态栏更新 ====================
+        function updateBadges() {
+            const badgeNet = document.getElementById('badgeNet');
+            const badgeHttps = document.getElementById('badgeHttps');
+            const isOnline = navigator.onLine;
+            const isHttps = location.protocol === 'https:';
+
+            badgeNet.innerHTML = isOnline ?
+                '<span class="dot green"></span> 网络在线' :
+                '<span class="dot red"></span> 网络离线';
+            badgeHttps.innerHTML = isHttps ?
+                '<span class="dot green"></span> HTTPS ✅' :
+                '<span class="dot yellow"></span> HTTP ⚠️';
+        }
+
+        // ==================== 连通性测试 ====================
+        async function testConnectivity(url, label) {
+            const resultBox = document.getElementById('resultConnectivity');
+            const progressBar = document.getElementById('progressConn');
+            resultBox.textContent = `⏳ 正在测试 ${label} (${url}) ...`;
+            resultBox.className = 'result-box info';
+            progressBar.style.width = '30%';
+
+            const startTime = performance.now();
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 8000);
+                const response = await fetch(url, {
+                    method: 'GET',
+                    mode: 'cors',
+                    signal: controller.signal,
+                    cache: 'no-cache',
+                });
+                clearTimeout(timeoutId);
+                const elapsed = (performance.now() - startTime).toFixed(0);
+                progressBar.style.width = '100%';
+                resultBox.textContent =
+                    `✅ ${label} 连通成功！\n` +
+                    `   状态码: ${response.status} ${response.statusText}\n` +
+                    `   耗时: ${elapsed}ms\n` +
+                    `   响应头 Content-Type: ${response.headers.get('content-type') || 'N/A'}\n` +
+                    `   时间: ${new Date().toLocaleTimeString()}`;
+                resultBox.className = 'result-box success';
+                document.getElementById('badgeNet').innerHTML = '<span class="dot green"></span> 公网连通 ✅';
+            } catch (err) {
+                progressBar.style.width = '100%';
+                const elapsed = (performance.now() - startTime).toFixed(0);
+                resultBox.textContent =
+                    `❌ ${label} 连接失败！\n` +
+                    `   错误: ${err.name}: ${err.message}\n` +
+                    `   耗时: ${elapsed}ms\n` +
+                    `   可能原因: CORS限制 / 网络不通 / DNS解析失败 / 超时`;
+                resultBox.className = 'result-box error';
+                document.getElementById('badgeNet').innerHTML = '<span class="dot red"></span> 公网不通 ❌';
+            }
+            // 2秒后重置进度条
+            setTimeout(() => { progressBar.style.width = '0%'; }, 2000);
+        }
+
+        // ==================== 自定义请求 ====================
+        async function customGet() {
+            const url = document.getElementById('customUrl').value.trim();
+            if (!url) return showToast('请输入URL', 'error');
+            const box = document.getElementById('resultCustom');
+            box.textContent = '⏳ 发送 GET 请求...';
+            box.className = 'result-box info';
+            try {
+                const resp = await fetch(url, { method: 'GET', mode: 'cors', cache: 'no-cache' });
+                const text = await resp.text();
+                let preview = text.length > 600 ? text.substring(0, 600) + '\n... (截断)' : text;
+                box.textContent = `✅ GET 成功 | 状态: ${resp.status}\n响应体预览:\n${preview}`;
+                box.className = 'result-box success';
+            } catch (e) {
+                box.textContent = `❌ GET 失败: ${e.message}`;
+                box.className = 'result-box error';
+            }
+        }
+
+        async function customPost() {
+            const url = document.getElementById('customUrl').value.trim();
+            if (!url) return showToast('请输入URL', 'error');
+            const box = document.getElementById('resultCustom');
+            box.textContent = '⏳ 发送 POST 请求...';
+            box.className = 'result-box info';
+            const payload = { test: true, timestamp: Date.now(), message: '公网部署测试' };
+            try {
+                const resp = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    mode: 'cors',
+                });
+                const text = await resp.text();
+                let preview = text.length > 500 ? text.substring(0, 500) + '\n... (截断)' : text;
+                box.textContent = `✅ POST 成功 | 状态: ${resp.status}\n响应体预览:\n${preview}`;
+                box.className = 'result-box success';
+            } catch (e) {
+                box.textContent = `❌ POST 失败: ${e.message}`;
+                box.className = 'result-box error';
+            }
+        }
+
+        async function customTimeout() {
+            const url = document.getElementById('customUrl').value.trim();
+            if (!url) return showToast('请输入URL', 'error');
+            const box = document.getElementById('resultCustom');
+            box.textContent = '⏳ 发送请求（5秒超时）...';
+            box.className = 'result-box info';
+            try {
+                const controller = new AbortController();
+                setTimeout(() => controller.abort(), 5000);
+                const resp = await fetch(url, { signal: controller.signal, mode: 'cors' });
+                const text = await resp.text();
+                box.textContent = `⚠️ 未超时 | 状态: ${resp.status}\n${text.substring(0, 400)}`;
+                box.className = 'result-box success';
+            } catch (e) {
+                box.textContent = `🕐 ${e.name === 'AbortError' ? '请求已超时(5s)' : '错误: ' + e.message}`;
+                box.className = 'result-box error';
+            }
+        }
+
+        // ==================== 资源加载测试 ====================
+        function testImageLoad() {
+            const preview = document.getElementById('resourcePreview');
+            const resultBox = document.getElementById('resultResource');
+            resultBox.textContent = '⏳ 正在加载测试图片...';
+            resultBox.className = 'result-box info';
+            preview.innerHTML = '';
+
+            const img = new Image();
+            const startTime = performance.now();
+            // 使用一张可靠的公开测试图片
+            img.src = 'https://picsum.photos/300/150?random=' + Date.now();
+            img.style.maxWidth = '100%';
+            img.style.borderRadius = '8px';
+            img.style.marginTop = '8px';
+            img.onload = () => {
+                const elapsed = (performance.now() - startTime).toFixed(0);
+                preview.appendChild(img);
+                resultBox.textContent = `✅ 图片加载成功！耗时: ${elapsed}ms | 尺寸: ${img.naturalWidth}x${img.naturalHeight}px | 来源: picsum.photos`;
+                resultBox.className = 'result-box success';
+            };
+            img.onerror = () => {
+                preview.innerHTML = '<span class="tag fail">图片加载失败</span>';
+                resultBox.textContent = '❌ 图片加载失败，可能网络不通或资源不可用';
+                resultBox.className = 'result-box error';
+            };
+        }
+
+        function testFontLoad() {
+            const resultBox = document.getElementById('resultResource');
+            resultBox.textContent = '⏳ 正在测试字体加载（Google Fonts）...';
+            resultBox.className = 'result-box info';
+            // 动态加载字体
+            const link = document.createElement('link');
+            link.href = 'https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&display=swap';
+            link.rel = 'stylesheet';
+            link.onload = () => {
+                document.body.style.fontFamily = "'Noto Sans SC', sans-serif";
+                resultBox.textContent = '✅ Google Fonts (Noto Sans SC) 字体加载成功！页面字体已切换。';
+                resultBox.className = 'result-box success';
+            };
+            link.onerror = () => {
+                resultBox.textContent = '❌ Google Fonts 加载失败，可能网络不通';
+                resultBox.className = 'result-box error';
+            };
+            document.head.appendChild(link);
+        }
+
+        // ==================== WebSocket ====================
+        let ws = null;
+        function wsConnect() {
+            const box = document.getElementById('resultWebSocket');
+            const btnConn = document.getElementById('btnWsConnect');
+            const btnSend = document.getElementById('btnWsSend');
+            const btnClose = document.getElementById('btnWsClose');
+            box.textContent = '⏳ 正在连接 WebSocket (wss://echo.websocket.org)...';
+            box.className = 'result-box info';
+            try {
+                // 使用公共 Echo WebSocket
+                ws = new WebSocket('wss://ws.postman-echo.com/raw');
+                ws.onopen = () => {
+                    box.textContent = '✅ WebSocket 连接成功！\n服务: ws.postman-echo.com\n可以发送消息测试';
+                    box.className = 'result-box success';
+                    btnConn.disabled = true;
+                    btnSend.disabled = false;
+                    btnClose.disabled = false;
+                    showToast('WebSocket 连接成功', 'success');
+                };
+                ws.onmessage = (event) => {
+                    box.textContent += `\n📩 收到回复: ${event.data}`;
+                    box.scrollTop = box.scrollHeight;
+                };
+                ws.onerror = () => {
+                    box.textContent = '❌ WebSocket 连接错误';
+                    box.className = 'result-box error';
+                };
+                ws.onclose = () => {
+                    box.textContent += '\n🔌 连接已关闭';
+                    box.className = 'result-box info';
+                    btnConn.disabled = false;
+                    btnSend.disabled = true;
+                    btnClose.disabled = true;
+                    ws = null;
+                };
+            } catch (e) {
+                box.textContent = `❌ WebSocket 异常: ${e.message}`;
+                box.className = 'result-box error';
+            }
+        }
+
+        function wsSend() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) return showToast('请先连接 WebSocket', 'error');
+            const msg = '公网测试消息 - ' + new Date().toISOString();
+            ws.send(msg);
+            const box = document.getElementById('resultWebSocket');
+            box.textContent += `\n📤 已发送: ${msg}`;
+            box.scrollTop = box.scrollHeight;
+            showToast('消息已发送', 'info');
+        }
+
+        function wsClose() {
+            if (ws) {
+                ws.close(1000, '用户主动关闭');
+                ws = null;
+                document.getElementById('btnWsConnect').disabled = false;
+                document.getElementById('btnWsSend').disabled = true;
+                document.getElementById('btnWsClose').disabled = true;
+                showToast('WebSocket 已关闭', 'info');
+            }
+        }
+
+        // ==================== 浏览器信息 ====================
+        function updateBrowserInfo() {
+            document.getElementById('ua').textContent = navigator.userAgent;
+            document.getElementById('platform').textContent = navigator.platform || 'N/A';
+            document.getElementById('lang').textContent = navigator.language;
+            document.getElementById('screenRes').textContent = `${screen.width}x${screen.height}`;
+            document.getElementById('viewport').textContent = `${window.innerWidth}x${window.innerHeight}`;
+            document.getElementById('cookieEnabled').textContent = navigator.cookieEnabled ? '是 ✅' : '否 ❌';
+            document.getElementById('onlineStatus').textContent = navigator.onLine ?
+                '在线 <span class="tag ok">ONLINE</span>' :
+                '离线 <span class="tag fail">OFFLINE</span>';
+            document.getElementById('dnt').textContent = navigator.doNotTrack || '未设置';
+        }
+
+        // ==================== 本地存储 ====================
+        function storageSet(type) {
+            const key = document.getElementById('storageKey').value.trim();
+            const value = document.getElementById('storageValue').value;
+            const box = document.getElementById('resultStorage');
+            if (!key) return showToast('请输入键名', 'error');
+            try {
+                const storage = type === 'local' ? localStorage : sessionStorage;
+                storage.setItem(key, value);
+                box.textContent = `✅ 已写入 ${type}Storage\n键: "${key}"\n值: "${value}"`;
+                box.className = 'result-box success';
+                showToast(`${type}Storage 写入成功`, 'success');
+            } catch (e) {
+                box.textContent = `❌ 写入失败: ${e.message}`;
+                box.className = 'result-box error';
+            }
+        }
+
+        function storageGet(type) {
+            const key = document.getElementById('storageKey').value.trim();
+            const box = document.getElementById('resultStorage');
+            if (!key) return showToast('请输入键名', 'error');
+            try {
+                const storage = type === 'local' ? localStorage : sessionStorage;
+                const value = storage.getItem(key);
+                if (value === null) {
+                    box.textContent = `⚠️ ${type}Storage 中不存在键 "${key}"`;
+                    box.className = 'result-box info';
+                } else {
+                    box.textContent = `✅ ${type}Storage 读取成功\n键: "${key}"\n值: "${value}"`;
+                    box.className = 'result-box success';
+                }
+            } catch (e) {
+                box.textContent = `❌ 读取失败: ${e.message}`;
+                box.className = 'result-box error';
+            }
+        }
+
+        function storageClear() {
+            const box = document.getElementById('resultStorage');
+            try {
+                const localCount = localStorage.length;
+                const sessionCount = sessionStorage.length;
+                localStorage.clear();
+                sessionStorage.clear();
+                box.textContent =
+                `🗑️ 已清除全部存储\nlocalStorage 清除 ${localCount} 项\nsessionStorage 清除 ${sessionCount} 项`;
+                box.className = 'result-box info';
+                showToast('存储已清除', 'info');
+            } catch (e) {
+                box.textContent = `❌ 清除失败: ${e.message}`;
+                box.className = 'result-box error';
+            }
+        }
+
+        // ==================== 表单处理 ====================
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+            const box = document.getElementById('resultForm');
+            box.textContent = `✅ 表单提交成功！\n数据: ${JSON.stringify(data, null, 2)}`;
+            box.className = 'result-box success';
+            showToast('表单验证通过', 'success');
+        }
+
+        // ==================== 性能指标 ====================
+        function refreshPerf() {
+            const timing = performance.timing;
+            const navStart = timing.navigationStart;
+            const formatMs = (val) => val > 0 ? `${val}ms` : '--';
+
+            document.getElementById('perfDns').textContent = formatMs(timing.domainLookupEnd - timing.domainLookupStart);
+            document.getElementById('perfTcp').textContent = formatMs(timing.connectEnd - timing.connectStart);
+            document.getElementById('perfTtfb').textContent = formatMs(timing.responseStart - timing.requestStart);
+            document.getElementById('perfDom').textContent = formatMs(timing.domContentLoadedEventEnd - navStart);
+            document.getElementById('perfLoad').textContent = formatMs(timing.loadEventEnd - navStart);
+
+            // 内存估算 (Chrome)
+            if (performance.memory) {
+                const memMB = (performance.memory.usedJSHeapSize / 1048576).toFixed(1);
+                document.getElementById('perfMem').textContent = `${memMB} MB`;
+            } else {
+                document.getElementById('perfMem').textContent = '不支持';
+            }
+
+            // 如果 timing 数据不完整（已加载完毕），使用 PerformanceObserver 获取
+            if (timing.loadEventEnd === 0) {
+                const perfEntries = performance.getEntriesByType('navigation');
+                if (perfEntries.length > 0) {
+                    const nav = perfEntries[0];
+                    document.getElementById('perfDns').textContent = formatMs(Math.round(nav.domainLookupEnd - nav
+                        .domainLookupStart));
+                    document.getElementById('perfTcp').textContent = formatMs(Math.round(nav.connectEnd - nav.connectStart));
+                    document.getElementById('perfTtfb').textContent = formatMs(Math.round(nav.responseStart - nav
+                        .requestStart));
+                    document.getElementById('perfDom').textContent = formatMs(Math.round(nav.domContentLoadedEventEnd - nav
+                        .startTime));
+                    document.getElementById('perfLoad').textContent = formatMs(Math.round(nav.loadEventEnd - nav.startTime));
+                }
+            }
+        }
+
+        // ==================== 初始调用 ====================
+        updateBadges();
+    </script>
+</body>
+</html>
